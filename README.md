@@ -1,10 +1,10 @@
-doubanrobot
-===========
+# doubanrobot
 
 A simple robot for douban.com
 
     .
-    ├── douban.py	-- by urllib/urllib2
-    ├── douban_requests.py --by requests
+    ├── doubanrobot.py  --by requests.
+    ├── douban_urllib.py	-- by urllib/urllib2
     └── README.md
 
+**Notice:** douban_urllib.py will never be updated.
