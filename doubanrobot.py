@@ -3,7 +3,7 @@
 # @Date    : 2016-03-20 18:17:54
 # @Author  : Linsir (root@linsir.org)
 # @Link    : http://linsir.org
-# @Version : 0.2
+# @Version : 0.3
 
 import requests
 import requests.utils
@@ -85,7 +85,7 @@ class DoubanRobot:
         '''
         cookies = self.session.cookies.get_dict()
         # r = self.session.get('http://httpbin.org/get',)
-        r = self.session.get('https://www.douban.com',)
+        r = self.session.get('https://www.douban.com',cookies=cookies)
         if r.cookies.get_dict():
             logging.info('cookies is end of date, login again')
             self.login()
@@ -101,7 +101,7 @@ class DoubanRobot:
         login douban.com and save the cookies to file.
         '''
         # url = 'http://httpbin.org/post'
-        r = self.session.post(self.login_url, data=self.data,)
+        r = self.session.post(self.login_url, data=self.data, cookies=self.session.cookies.get_dict())
         html =  r.text
         # save_html('1.html', html)
         # 验证码
@@ -117,7 +117,7 @@ class DoubanRobot:
                 self.data["captcha-id"] = captcha.group(1)
                 self.data["user_login"] = "登录"
 
-                r = self.session.post(self.login_url, data=self.data)
+                r = self.session.post(self.login_url, data=self.data, cookies=self.session.cookies.get_dict())
 
             # save_html('2.html',r.text)
         if r.url == 'https://www.douban.com/':
@@ -143,7 +143,7 @@ class DoubanRobot:
             'rev_text': content,
             'rev_submit':'好了，发言',
             }
-        r = self.session.post(group_url, post_data)
+        r = self.session.post(group_url, post_data, cookies=self.session.cookies.get_dict())
         if r.url == group_url:
             logging.info('Okay, new_topic: %s post successfully !'%title)
             return True
@@ -163,7 +163,7 @@ class DoubanRobot:
             }
 
         self.session.headers["Referer"] = "https://www.douban.com/"
-        r = self.session.post("https://www.douban.com/", post_data,)
+        r = self.session.post("https://www.douban.com/", post_data, cookies=self.session.cookies.get_dict())
         if r.status_code == 200:
             logging.info('Okay, talk_status: %s post successfully !'%content)
             return True
@@ -183,7 +183,7 @@ class DoubanRobot:
            "to" : id,
            }
         self.session.headers["Referer"] = "https://www.douban.com/doumail/write"
-        r = self.session.post("https://www.douban.com/doumail/write", post_data,)
+        r = self.session.post("https://www.douban.com/doumail/write", post_data, cookies=self.session.cookies.get_dict())
         if r.status_code == 200:
             logging.info('Okay, send_mail: To %s doumail "%s" successfully !'%(id, content))
             return True
@@ -202,7 +202,7 @@ class DoubanRobot:
             return False
 
         group_url = "https://www.douban.com/group/" + group_id +"/#topics"
-        html = self.opener.open(group_url).read()
+        html = self.session.get(group_url, cookies=self.session.cookies.get_dict()).text
         topics = re.findall(r'topic/(\d+?)/.*?class="">.*?<td nowrap="nowrap" class="">(.*?)</td>',
                     html, re.DOTALL)
 
@@ -214,7 +214,7 @@ class DoubanRobot:
                         "start" : "0",
                         "submit_btn" : "加上去"
                 }
-                self.session.post("https://www.douban.com/group/topic/" + item[0] + "/add_comment#last?", post_data)
+                self.session.post("https://www.douban.com/group/topic/" + item[0] + "/add_comment#last?", post_data, cookies=self.session.cookies.get_dict())
                 if r.status_code == 200:
                     logging.info('Okay, send_mail: To %s doumail "%s" successfully !'%(id, content))
         return True
