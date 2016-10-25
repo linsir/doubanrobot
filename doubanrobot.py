@@ -247,7 +247,7 @@ if __name__ == '__main__':
     print titile, content
     # if titile and content:
     #     print app.new_topic("cd", titile, content)
-    app.talk_status('hahahah')
-    app.send_mail(63666378)
+    app.talk_status('hahahah, just for a test')
+    app.send_mail(63666378, 'Hallo, linsir.')
     # app.sofa("CentOS")
 
