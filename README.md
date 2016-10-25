@@ -17,7 +17,7 @@ import doubanrobot
 email = 'username@email.com'
 password = 'password'
 
-app = DoubanRobot(email, password)
+app = doubanrobot.DoubanRobot(email, password)
 
 titile, content = app.get_joke()
 print titile, content
