@@ -1,3 +1,5 @@
 *.pyc
+*.html
 cookies.txt
 doubanrobot.log
+

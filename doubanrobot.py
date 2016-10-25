@@ -17,9 +17,7 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-email = 'username@email.com'
-password = 'password'
-cookies_file = 'cookies.txt'
+COOKIES_FILE = 'cookies.txt'
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
@@ -36,9 +34,7 @@ class DoubanRobot:
     '''
     A simple robot for douban.com
     '''
-    def __init__(self):
-        self.email = email
-        self.password = password
+    def __init__(self, email, password):
         self.ck = None
         self.data = {
                 "form_email": email,
@@ -64,7 +60,7 @@ class DoubanRobot:
         load cookies from file.
         '''
         try:
-            with open(cookies_file) as f:
+            with open(COOKIES_FILE) as f:
                 self.session.cookies = requests.utils.cookiejar_from_dict(pickle.load(f))
             return True
         except Exception, e:
@@ -75,7 +71,7 @@ class DoubanRobot:
         '''
         save cookies to file.
         '''
-        with open(cookies_file, 'w') as f:
+        with open(COOKIES_FILE, 'w') as f:
             pickle.dump(requests.utils.dict_from_cookiejar(self.session.cookies), f)
         logging.info('save cookies to file.')
 
@@ -89,7 +85,6 @@ class DoubanRobot:
         if r.cookies.get_dict():
             logging.info('cookies is end of date, login again')
             self.login()
-            self.get_ck()
         if cookies.has_key('ck'):
             self.ck = cookies['ck'].strip('"')
             logging.info("ck:%s" %self.ck)
@@ -164,6 +159,7 @@ class DoubanRobot:
 
         self.session.headers["Referer"] = "https://www.douban.com/"
         r = self.session.post("https://www.douban.com/", post_data, cookies=self.session.cookies.get_dict())
+        # save_html('3.html',r.text)
         if r.status_code == 200:
             logging.info('Okay, talk_status: %s post successfully !'%content)
             return True
@@ -243,13 +239,15 @@ def save_html(name, data):
         f.write(data)
 
 if __name__ == '__main__':
-    app = DoubanRobot()
+    email = 'username@email.com'
+    password = 'password'
+    app = DoubanRobot(email, password)
     # app.login()
     titile, content = app.get_joke()
-    # print content
+    print titile, content
     # if titile and content:
     #     print app.new_topic("cd", titile, content)
-    app.talk_status()
+    app.talk_status('hahahah')
     app.send_mail(63666378)
     # app.sofa("CentOS")
 
