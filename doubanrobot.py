@@ -20,13 +20,13 @@ sys.setdefaultencoding('utf-8')
 COOKIES_FILE = 'cookies.txt'
 
 logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                    datefmt='%m-%d %H:%M',
+                    format='%(asctime)s %(name)-12s %(levelname)-3s %(message)s',
+                    datefmt='%m-%d %H:%M:%S',
                     filename='doubanrobot.log',
                     filemode='a')
 console = logging.StreamHandler()
 console.setLevel(logging.INFO)
-formatter = logging.Formatter('%(name)-2s: %(levelname)-8s %(message)s')
+formatter = logging.Formatter('%(asctime)s %(levelname)-s %(message)s', datefmt='%m-%d %H:%M:%S')
 console.setFormatter(formatter)
 logging.getLogger('').addHandler(console)
 
@@ -49,11 +49,10 @@ class DoubanRobot:
             "Origin": "https://www.douban.com",
         }
         # self.session.headers = self.headers
-        if not self.load_cookies():
-            if self.login():
-                self.get_ck()
-        else:
+        if self.load_cookies():
             self.get_ck()
+        else:
+            self.get_new_cookies()
 
     def load_cookies(self):
         '''
@@ -67,10 +66,16 @@ class DoubanRobot:
             logging.error('faild to load cookies from file.')
             return False
 
-    def save_cookies(self):
+    def get_new_cookies(self):
+        if self.login():
+            self.get_ck()
+
+    def save_cookies(self, cookies):
         '''
         save cookies to file.
         '''
+        if cookies:
+            self.session.cookies.update(cookies)
         with open(COOKIES_FILE, 'w') as f:
             pickle.dump(requests.utils.dict_from_cookiejar(self.session.cookies), f)
         logging.info('save cookies to file.')
@@ -79,13 +84,16 @@ class DoubanRobot:
         '''
         open douban.com and then get the ck from html.
         '''
-        cookies = self.session.cookies.get_dict()
         # r = self.session.get('http://httpbin.org/get',)
-        r = self.session.get('https://www.douban.com',cookies=cookies)
-        if r.cookies.get_dict():
+        r = self.session.get('https://www.douban.com/accounts/',cookies=self.session.cookies.get_dict())
+        # save_html('1.html', r.text)
+        cookies = self.session.cookies.get_dict()
+        headers = dict(r.headers)
+        if headers.has_key('Set-Cookie'):
             logging.info('cookies is end of date, login again')
-            self.login()
-        if cookies.has_key('ck'):
+            self.ck = None
+            self.get_new_cookies()
+        elif cookies.has_key('ck'):
             self.ck = cookies['ck'].strip('"')
             logging.info("ck:%s" %self.ck)
         else:
@@ -95,6 +103,7 @@ class DoubanRobot:
         '''
         login douban.com and save the cookies to file.
         '''
+        self.session.cookies.clear()
         # url = 'http://httpbin.org/post'
         r = self.session.post(self.login_url, data=self.data, cookies=self.session.cookies.get_dict())
         html =  r.text
@@ -103,7 +112,7 @@ class DoubanRobot:
         regex = r'<img id="captcha_image" src="(.+?)" alt="captcha"'
         imgurl = re.compile(regex).findall(html)
         if imgurl:
-            print "The captcha_image url address is %s" %imgurl[0]
+            logging.info("The captcha_image url address is %s" %imgurl[0])
 
             captcha = re.search('<input type="hidden" name="captcha-id" value="(.+?)"/>', html)
             if captcha:
@@ -112,11 +121,11 @@ class DoubanRobot:
                 self.data["captcha-id"] = captcha.group(1)
                 self.data["user_login"] = "登录"
 
-                r = self.session.post(self.login_url, data=self.data, cookies=self.session.cookies.get_dict())
 
+            r = self.session.post(self.login_url, data=self.data, cookies=self.session.cookies.get_dict())
             # save_html('2.html',r.text)
         if r.url == 'https://www.douban.com/':
-            self.save_cookies()
+            self.save_cookies(r.cookies)
             logging.info('login successfully!')
         else:
             logging.error('Faild to login, check username and password and captcha code.')
@@ -140,7 +149,7 @@ class DoubanRobot:
             }
         r = self.session.post(group_url, post_data, cookies=self.session.cookies.get_dict())
         if r.url == group_url:
-            logging.info('Okay, new_topic: %s post successfully !'%title)
+            logging.info('Okay, new_topic: "%s" post successfully !'%title)
             return True
         return False
 
@@ -161,7 +170,7 @@ class DoubanRobot:
         r = self.session.post("https://www.douban.com/", post_data, cookies=self.session.cookies.get_dict())
         # save_html('3.html',r.text)
         if r.status_code == 200:
-            logging.info('Okay, talk_status: %s post successfully !'%content)
+            logging.info('Okay, talk_status: "%s" post successfully !'%content)
             return True
 
     def send_mail(self, id ,content = 'Hey,Linsir !'):
@@ -183,6 +192,7 @@ class DoubanRobot:
         if r.status_code == 200:
             logging.info('Okay, send_mail: To %s doumail "%s" successfully !'%(id, content))
             return True
+
     def sofa(self,
             group_id,
             content=['丫鬟命，公主心，怪不得人。',
@@ -212,7 +222,7 @@ class DoubanRobot:
                 }
                 self.session.post("https://www.douban.com/group/topic/" + item[0] + "/add_comment#last?", post_data, cookies=self.session.cookies.get_dict())
                 if r.status_code == 200:
-                    logging.info('Okay, send_mail: To %s doumail "%s" successfully !'%(id, content))
+                    logging.info('Okay, send_mail: To %s doumail "%s" successfully!'%(id, content))
         return True
 
     def get_joke(self):
