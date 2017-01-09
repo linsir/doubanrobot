@@ -1,5 +1,6 @@
 *.pyc
 *.html
+test.py
 cookies.txt
 doubanrobot.log
 
