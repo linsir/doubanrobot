@@ -220,7 +220,7 @@ class DoubanRobot:
                         "start" : "0",
                         "submit_btn" : "加上去"
                 }
-                self.session.post("https://www.douban.com/group/topic/" + item[0] + "/add_comment#last?", post_data, cookies=self.session.cookies.get_dict())
+                r = self.session.post("https://www.douban.com/group/topic/" + item[0] + "/add_comment#last?", post_data, cookies=self.session.cookies.get_dict())
                 if r.status_code == 200:
                     logging.info('Okay, send_mail: To %s doumail "%s" successfully!'%(id, content))
         return True
