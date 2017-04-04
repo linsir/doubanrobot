@@ -61,3 +61,8 @@ You can also combine this script with Linux `crontab` to automaticlly up your to
 ```
 	0 8-24/4 * * * /usr/bin/python /root/doubanrobot.py
 ```
+
+## Todo List
+
+- [ ] Delete Comment
+- [ ] Picture Example
