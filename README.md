@@ -47,7 +47,7 @@ Some people use charactor as their `douban_id`, however I just test the interge 
 `topics_list` is a list of the interger part of your topics url 
 
 ```
-https://www.douban.com/group/topic/topic_id/
+	https://www.douban.com/group/topic/topic_id/
 ```
 
 You can manually modify it, the example already given in the `code comment`.
@@ -59,5 +59,5 @@ In the end, `content` list contains all of your possible `comments`.
 You can also combine this script with Linux `crontab` to automaticlly up your topics in specific time. For example:
 
 ```
-0 8-24/4 * * * /usr/bin/python /root/doubanrobot.py
+	0 8-24/4 * * * /usr/bin/python /root/doubanrobot.py
 ```
