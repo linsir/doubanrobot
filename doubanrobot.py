@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Date    : 2016-03-20 18:17:54
-# @Author  : Linsir (root@linsir.org)
-# @Link    : http://linsir.org
-# @Version : 0.3
+# @Date    : 2017-04-04 22:17:10
+# @Author  : Linsir (root@linsir.org) | Jimmy66 (root@jimmy66.com)
+# @Link    : http://linsir.org | http://jimmy66.com
+# @Version : 0.4
 
 import requests
 import requests.utils
@@ -12,6 +12,7 @@ import json
 import re
 import random
 import logging
+import time
 
 import sys
 reload(sys)
@@ -34,10 +35,11 @@ class DoubanRobot:
     '''
     A simple robot for douban.com
     '''
-    def __init__(self, email, password):
+    def __init__(self, account_id, password, douban_id):
         self.ck = None
+        self.douban_id = douban_id
         self.data = {
-                "form_email": email,
+                "form_email": account_id,
                 "form_password": password,
                 "source": "index_nav",
                 "remember": "on"
@@ -105,7 +107,7 @@ class DoubanRobot:
         '''
         self.session.cookies.clear()
         # url = 'http://httpbin.org/post'
-        r = self.session.post(self.login_url, data=self.data, cookies=self.session.cookies.get_dict())
+        r = self.session.post(self.login_url, data=self.data, cookies=self.session.cookies.get_dict())  #核心语句数据从其中传入
         html =  r.text
         # save_html('1.html', html)
         # 验证码
@@ -120,6 +122,7 @@ class DoubanRobot:
                 self.data["captcha-solution"] = vcode
                 self.data["captcha-id"] = captcha.group(1)
                 self.data["user_login"] = "登录"
+                # print 'yes'
 
 
             r = self.session.post(self.login_url, data=self.data, cookies=self.session.cookies.get_dict())
@@ -131,6 +134,12 @@ class DoubanRobot:
             logging.error('Faild to login, check username and password and captcha code.')
             return False
         return True
+
+    def get_my_topics(self):
+        homepage_url = self.douban_id.join(['https://www.douban.com/group/people/','/publish'])
+        r = self.session.get(homepage_url).text
+        topics_list = re.findall(r'<a href="https://www.douban.com/group/topic/([0-9]+)/', r)
+        return topics_list
 
     def new_topic(self, group_id, title, content='Post by python'):
         '''
@@ -193,12 +202,44 @@ class DoubanRobot:
             logging.info('Okay, send_mail: To %s doumail "%s" successfully !'%(id, content))
             return True
 
-    def sofa(self,
+    def topics_up(self,
+            topics_list,
+            content=['顶',
+                    '顶帖',
+                    '自己顶',
+                    'waiting',]
+            ):
+        '''
+        Randomly select a content and reply a topic.
+        '''
+        if not self.ck:
+            logging.error('ck is invalid!')
+            return False
+
+
+        # For example --> topics_list = ['22836371','98569169']
+        #topics_list = ['22836371','98569169']
+        for item in topics_list:
+            post_data = {
+                    "ck" : self.ck,
+                    "rv_comment" : random.choice(content),
+                    "start" : "0",
+                    "submit_btn" : "加上去"
+            }
+
+            r = self.session.post("https://www.douban.com/group/topic/" + item + "/add_comment#last?", post_data, cookies=self.session.cookies.get_dict())
+            if r.status_code == 200:
+                logging.info('Okay, already up ' + item + ' topic' )
+            print r.status_code
+            print str( topics_list.index(item) + 1 ).join(['Waiting for ',' ...'])
+            time.sleep(60)  # Wait a minute to up next topic, You can modify it to delay longer time
+        return True
+
+   def sofa(self,
             group_id,
-            content=['丫鬟命，公主心，怪不得人。',
-                    '要交流就平等交流，弄得一副跪舔样,谁还能瞧得起你？',
-                    '己所欲，勿施于人..',
-                    '人在做，天在看.',]
+            content=['沙发',
+                    '顶',
+                    '挽尊',]
             ):
         '''
         Randomly select a content and reply a topic.
@@ -223,7 +264,7 @@ class DoubanRobot:
                 r = self.session.post("https://www.douban.com/group/topic/" + item[0] + "/add_comment#last?", post_data, cookies=self.session.cookies.get_dict())
                 if r.status_code == 200:
                     logging.info('Okay, send_mail: To %s doumail "%s" successfully!'%(id, content))
-        return True
+        return True        
 
     def get_joke(self):
         '''
@@ -244,20 +285,23 @@ class DoubanRobot:
         return title, content
 
 
+
 def save_html(name, data):
     with open(name, 'w') as f:
         f.write(data)
 
 if __name__ == '__main__':
-    email = 'username@email.com'
-    password = 'password'
-    app = DoubanRobot(email, password)
+    account_id =  ''    # your account no (E-mail or phone number)
+    password   =  ''    # your account password
+    douban_id  =  ''    # your id number
+    app = DoubanRobot(account_id, password,douban_id)
     # app.login()
-    titile, content = app.get_joke()
-    print titile, content
+    # titile, content = app.get_joke()
+    # print titile, content
     # if titile and content:
     #     print app.new_topic("cd", titile, content)
     app.talk_status('hahahah, just for a test')
-    app.send_mail(63666378, 'Hallo, linsir.')
-    # app.sofa("CentOS")
-
+    app.send_mail(159831817, 'Hallo, linsir.')
+    app.sofa("CentOS")
+    topics_list = app.get_my_topics()
+    app.topics_up(topics_list)
