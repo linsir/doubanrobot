@@ -31,7 +31,7 @@ app.sofa("CentOS",['aaaa', 'bbbb', 'cccc'])
 
 ## Topics_Up function
 
-This function help you to save time of manually posting a comment in order to **up** your **topic**. You can deploy this code on your `server`, such as `Linux VPS`
+This function helps you to save time of manually posting a comment in order to **up** your **topic**. You can deploy this code on your `server`, such as `Linux VPS`
 
 This function fecth all of your topics in your `douban group` homepage. The url of this page looks like this 
 
@@ -41,7 +41,7 @@ This function fecth all of your topics in your `douban group` homepage. The url 
 
 The variable `douban_id` should be filled in. You can find it in the above url or your douban homepage. 
 
-Some people use charactor as their `douban_id`, however I just test the interge type `douban_id `, which is also the original format.
+Some people use characters as their `douban_id`, however I just test the interge type `douban_id `, which is also the original format.
 
 
 `topics_list` is a list of the interger part of your topics url 
@@ -62,7 +62,13 @@ You can also combine this script with Linux `crontab` to automaticlly up your to
 	0 8-24/4 * * * /usr/bin/python /root/doubanrobot.py
 ```
 
+
+## Example
+
+![up_topics_example](up_topics_example.jpg)
+
 ## Todo List
 
+- [x] Example Picture
 - [ ] Delete Comment
-- [ ] Picture Example
+- [ ] Usage Illustration
