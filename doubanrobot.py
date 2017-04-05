@@ -235,6 +235,25 @@ class DoubanRobot:
             time.sleep(60)  # Wait a minute to up next topic, You can modify it to delay longer time
         return True
 
+
+    def delete_comments(self,topic_url):
+        topic_id = re.findall(r'([0-9]+)', topic_url)[0]
+        content = self.session.get(topic_url).text
+        comments_list = re.findall(r'<li class="clearfix comment-item" id="[0-9]+" data-cid="([0-9]+)" >', content)
+        print comments_list
+        # Leave last comment and delete all of the past comments
+        for item in comments_list[:-1]:
+            post_data = {
+                    "ck"  : self.ck,
+                    "cid" : item
+            }
+            r = self.session.post("https://www.douban.com/j/group/topic/" + topic_id + "/remove_comment", post_data, cookies=self.session.cookies.get_dict())
+            if r.status_code == 200:
+                logging.info('Okay, already delete ' + topic_id + ' topic' )  # All of them return 200... Even if it is not your comment
+            print r.status_code
+            time.sleep(10)  # Wait ten seconds to delete next one
+        return True
+
    def sofa(self,
             group_id,
             content=['沙发',
@@ -305,3 +324,4 @@ if __name__ == '__main__':
     app.sofa("CentOS")
     topics_list = app.get_my_topics()
     app.topics_up(topics_list)
+    app.delete_comments('group_topic_url')   # e.g. https://www.douban.com/group/topic/22836371/

@@ -33,7 +33,7 @@ app.sofa("CentOS",['aaaa', 'bbbb', 'cccc'])
 
 This function helps you to save time of manually posting a comment in order to **up** your **topic**. You can deploy this code on your `server`, such as `Linux VPS`
 
-This function fecth all of your topics in your `douban group` homepage. The url of this page looks like this 
+This function fetch all of your topics in your `douban group` homepage. The url of this page looks like this 
 
 ```
 	https://www.douban.com/group/people/your_douban_id/publish
@@ -72,5 +72,7 @@ If you didn't follow the group before, the service may return you a **403** `res
 ## Todo List
 
 - [x] Example Picture
-- [ ] Delete Comment
+- [x] Delete Previous Comments In One Topic
 - [ ] Usage Illustration
+- [ ] Delete All of Previous Comments In Account
+- [ ] Handle Multiple Pages Issues
