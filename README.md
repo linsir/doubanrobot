@@ -41,7 +41,7 @@ This function fecth all of your topics in your `douban group` homepage. The url 
 
 The variable `douban_id` should be filled in. You can find it in the above url or your douban homepage. 
 
-Some people use characters as their `douban_id`, however I just test the interge type `douban_id `, which is also the original format.
+Some people use characters as their `douban_id`, however I just test the interge type `douban_id`, which is also the original format.
 
 
 `topics_list` is a list of the interger part of your topics url 
@@ -62,6 +62,8 @@ You can also combine this script with Linux `crontab` to automaticlly up your to
 	0 8-24/4 * * * /usr/bin/python /root/doubanrobot.py
 ```
 
+
+If you didn't follow the group before, the service may return you a **403** `response code`, because you do not have right to make comment in this group without following it.
 
 ## Example
 

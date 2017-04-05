@@ -232,9 +232,39 @@ class DoubanRobot:
                 logging.info('Okay, already up ' + item + ' topic' )
             print r.status_code
             print str( topics_list.index(item) + 1 ).join(['Waiting for ',' ...'])
-            time.sleep(60)  # Wait a minute to up next topic 
-
+            time.sleep(60)  # Wait a minute to up next topic, You can modify it to delay longer time
         return True
+
+   def sofa(self,
+            group_id,
+            content=['沙发',
+                    '顶',
+                    '挽尊',]
+            ):
+        '''
+        Randomly select a content and reply a topic.
+        '''
+        if not self.ck:
+            logging.error('ck is invalid!')
+            return False
+
+        group_url = "https://www.douban.com/group/" + group_id +"/#topics"
+        html = self.session.get(group_url, cookies=self.session.cookies.get_dict()).text
+        topics = re.findall(r'topic/(\d+?)/.*?class="">.*?<td nowrap="nowrap" class="">(.*?)</td>',
+                    html, re.DOTALL)
+
+        for item in topics:
+            if item[1] == '':
+                post_data = {
+                        "ck" : self.ck,
+                        "rv_comment" : random.choice(content),
+                        "start" : "0",
+                        "submit_btn" : "加上去"
+                }
+                r = self.session.post("https://www.douban.com/group/topic/" + item[0] + "/add_comment#last?", post_data, cookies=self.session.cookies.get_dict())
+                if r.status_code == 200:
+                    logging.info('Okay, send_mail: To %s doumail "%s" successfully!'%(id, content))
+        return True        
 
     def get_joke(self):
         '''
@@ -270,8 +300,8 @@ if __name__ == '__main__':
     # print titile, content
     # if titile and content:
     #     print app.new_topic("cd", titile, content)
-    # app.talk_status('hahahah, just for a test')
-    # app.send_mail(159831817, 'Hallo, linsir.')
-    # app.sofa("CentOS")
+    app.talk_status('hahahah, just for a test')
+    app.send_mail(159831817, 'Hallo, linsir.')
+    app.sofa("CentOS")
     topics_list = app.get_my_topics()
     app.topics_up(topics_list)
