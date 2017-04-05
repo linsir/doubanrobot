@@ -301,7 +301,7 @@ if __name__ == '__main__':
     # if titile and content:
     #     print app.new_topic("cd", titile, content)
     app.talk_status('hahahah, just for a test')
-    app.send_mail(159831817, 'Hallo, linsir.')
+    app.send_mail(63666378, 'Hallo, linsir.')
     app.sofa("CentOS")
     topics_list = app.get_my_topics()
     app.topics_up(topics_list)
