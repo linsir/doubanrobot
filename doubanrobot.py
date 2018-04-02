@@ -25,9 +25,9 @@ class DoubanRobot:
     '''
     A simple robot for douban.com
     '''
-    def __init__(self, account_id, password, douban_id):
+    def __init__(self, account_id, password):
         self.ck = None
-        self.douban_id = douban_id
+        self.douban_id = None
         self.data = {
             "form_email": account_id,
             "form_password": password,
@@ -93,17 +93,27 @@ class DoubanRobot:
         # r = self.session.get('http://httpbin.org/get',)
         r = self.session.get('https://www.douban.com/accounts/', cookies=self.session.cookies.get_dict())
         # save_html('1.html', r.text)
+        regex = '<input type="hidden" name="ck" value="(.+?)"/>'
+        ck = re.search(regex, r.text)
+
+
         cookies = self.session.cookies.get_dict()
         headers = dict(r.headers)
-        if headers.has_key('Set-Cookie'):
+        if 'Set-Cookie' in headers:
+            self.save_cookies(r.cookies)
+        if 'ck' in cookies:
+            self.ck = cookies['ck'].strip('"')
+            logging.info("ck: %s" % self.ck)
+            if 'dbcl2' in cookies:
+               self.account_id = cookies['dbcl2'].strip('"').split(':')[0]
+               logging.info("account_id: %s" % self.account_id) 
+        else:
             logging.info('Cookies is end of date, login again')
             self.ck = None
-            self.get_new_cookies()
-        elif cookies.has_key('ck'):
-            self.ck = cookies['ck'].strip('"')
-            logging.info("ck:%s" % self.ck)
-        else:
+            # self.get_new_cookies()
+            print self.session.cookies.get_dict()
             logging.error('Cannot get the ck. ')
+
 
     def login(self):
         '''
