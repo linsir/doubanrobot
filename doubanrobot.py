@@ -8,7 +8,6 @@
 import requests
 import requests.utils
 import pickle
-import json
 import re
 import random
 import logging
@@ -70,7 +69,7 @@ class DoubanRobot:
                 self.session.cookies = requests.utils.cookiejar_from_dict(pickle.load(f))
             return True
         except Exception, e:
-            logging.error('faild to load cookies from file.')
+            logging.error('Faild to load cookies from file. : %s' % e)
             return False
 
     def get_new_cookies(self):
@@ -85,7 +84,7 @@ class DoubanRobot:
             self.session.cookies.update(cookies)
         with open(COOKIES_FILE, 'w') as f:
             pickle.dump(requests.utils.dict_from_cookiejar(self.session.cookies), f)
-        logging.info('save cookies to file.')
+        logging.info('Save cookies to file.')
 
     def get_ck(self):
         '''
@@ -97,18 +96,18 @@ class DoubanRobot:
         cookies = self.session.cookies.get_dict()
         headers = dict(r.headers)
         if headers.has_key('Set-Cookie'):
-            logging.info('cookies is end of date, login again')
+            logging.info('Cookies is end of date, login again')
             self.ck = None
             self.get_new_cookies()
         elif cookies.has_key('ck'):
             self.ck = cookies['ck'].strip('"')
             logging.info("ck:%s" % self.ck)
         else:
-            logging.error('cannot get the ck. ')
+            logging.error('Cannot get the ck. ')
 
     def login(self):
         '''
-        login douban.com and save the cookies to file.
+        Login douban.com and save the cookies to file.
         '''
         self.session.cookies.clear()
         # url = 'http://httpbin.org/post'
