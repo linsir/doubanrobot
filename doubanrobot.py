@@ -19,17 +19,8 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 COOKIES_FILE = 'cookies.txt'
+LOG_FILE = 'doubanrobot.log'
 
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s %(name)-12s %(levelname)-3s %(message)s',
-                    datefmt='%m-%d %H:%M:%S',
-                    filename='doubanrobot.log',
-                    filemode='a')
-console = logging.StreamHandler()
-console.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s %(levelname)-s %(message)s', datefmt='%m-%d %H:%M:%S')
-console.setFormatter(formatter)
-logging.getLogger('').addHandler(console)
 
 class DoubanRobot:
     '''
@@ -39,22 +30,36 @@ class DoubanRobot:
         self.ck = None
         self.douban_id = douban_id
         self.data = {
-                "form_email": account_id,
-                "form_password": password,
-                "source": "index_nav",
-                "remember": "on"
+            "form_email": account_id,
+            "form_password": password,
+            "source": "index_nav",
+            "remember": "on"
         }
         self.session = requests.Session()
         self.login_url = 'https://www.douban.com/accounts/login'
         self.session.headers = {
-            "User-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.75 Safari/537.36",
+            "User-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 \
+                (KHTML, like Gecko) Chrome/49.0.2623.75 Safari/537.36",
             "Origin": "https://www.douban.com",
         }
+        self.config_log()
         # self.session.headers = self.headers
         if self.load_cookies():
             self.get_ck()
         else:
             self.get_new_cookies()
+
+    def config_log(self):
+        logging.basicConfig(level=logging.INFO,
+                            format='%(asctime)s %(name)-12s %(levelname)-3s %(message)s',
+                            datefmt='%m-%d %H:%M:%S',
+                            filename=LOG_FILE,
+                            filemode='a')
+        console = logging.StreamHandler()
+        console.setLevel(logging.INFO)
+        formatter = logging.Formatter('%(asctime)s %(levelname)-s %(message)s', datefmt='%m-%d %H:%M:%S')
+        console.setFormatter(formatter)
+        logging.getLogger('').addHandler(console)
 
     def load_cookies(self):
         '''
@@ -87,7 +92,7 @@ class DoubanRobot:
         open douban.com and then get the ck from html.
         '''
         # r = self.session.get('http://httpbin.org/get',)
-        r = self.session.get('https://www.douban.com/accounts/',cookies=self.session.cookies.get_dict())
+        r = self.session.get('https://www.douban.com/accounts/', cookies=self.session.cookies.get_dict())
         # save_html('1.html', r.text)
         cookies = self.session.cookies.get_dict()
         headers = dict(r.headers)
@@ -97,7 +102,7 @@ class DoubanRobot:
             self.get_new_cookies()
         elif cookies.has_key('ck'):
             self.ck = cookies['ck'].strip('"')
-            logging.info("ck:%s" %self.ck)
+            logging.info("ck:%s" % self.ck)
         else:
             logging.error('cannot get the ck. ')
 
@@ -107,23 +112,22 @@ class DoubanRobot:
         '''
         self.session.cookies.clear()
         # url = 'http://httpbin.org/post'
-        r = self.session.post(self.login_url, data=self.data, cookies=self.session.cookies.get_dict())  #核心语句数据从其中传入
-        html =  r.text
+        r = self.session.post(self.login_url, data=self.data, cookies=self.session.cookies.get_dict())
+        html = r.text
         # save_html('1.html', html)
         # 验证码
         regex = r'<img id="captcha_image" src="(.+?)" alt="captcha"'
         imgurl = re.compile(regex).findall(html)
         if imgurl:
-            logging.info("The captcha_image url address is %s" %imgurl[0])
+            logging.info("The captcha_image url address is %s" % imgurl[0])
 
             captcha = re.search('<input type="hidden" name="captcha-id" value="(.+?)"/>', html)
             if captcha:
-                vcode=raw_input('图片上的验证码是：')
+                vcode = raw_input('图片上的验证码是：')
                 self.data["captcha-solution"] = vcode
                 self.data["captcha-id"] = captcha.group(1)
                 self.data["user_login"] = "登录"
                 # print 'yes'
-
 
             r = self.session.post(self.login_url, data=self.data, cookies=self.session.cookies.get_dict())
             # save_html('2.html',r.text)
@@ -136,7 +140,7 @@ class DoubanRobot:
         return True
 
     def get_my_topics(self):
-        homepage_url = self.douban_id.join(['https://www.douban.com/group/people/','/publish'])
+        homepage_url = self.douban_id.join(['https://www.douban.com/group/people/', '/publish'])
         r = self.session.get(homepage_url).text
         topics_list = re.findall(r'<a href="https://www.douban.com/group/topic/([0-9]+)/', r)
         return topics_list
@@ -151,14 +155,14 @@ class DoubanRobot:
         group_url = "https://www.douban.com/group/" + group_id
         post_url = group_url + "/new_topic"
         post_data = {
-            'ck':self.ck,
-            'rev_title': title ,
-            'rev_text': content,
-            'rev_submit':'好了，发言',
-            }
+            "ck": self.ck,
+            "rev_title": title,
+            "rev_text": content,
+            "rev_submit": '好了，发言',
+        }
         r = self.session.post(group_url, post_data, cookies=self.session.cookies.get_dict())
         if r.url == group_url:
-            logging.info('Okay, new_topic: "%s" post successfully !'%title)
+            logging.info('Okay, new_topic: "%s" post successfully !' % title)
             return True
         return False
 
@@ -171,18 +175,19 @@ class DoubanRobot:
             return False
 
         post_data = {
-            'ck' : self.ck,
-            'comment' : content,
-            }
+            "ck": self.ck,
+            "comment": content,
+        }
 
-        self.session.headers["Referer"] = "https://www.douban.com/"
-        r = self.session.post("https://www.douban.com/", post_data, cookies=self.session.cookies.get_dict())
+        url = "https://www.douban.com/"
+        self.session.headers["Referer"] = url
+        r = self.session.post(url, post_data, cookies=self.session.cookies.get_dict())
         # save_html('3.html',r.text)
         if r.status_code == 200:
-            logging.info('Okay, talk_status: "%s" post successfully !'%content)
+            logging.info('Okay, talk_status: "%s" post successfully !' % content)
             return True
 
-    def send_mail(self, id ,content = 'Hey,Linsir !'):
+    def send_mail(self, id, content='Hey,Linsir !'):
         '''
         send a doumail to other.
         '''
@@ -191,24 +196,19 @@ class DoubanRobot:
             return False
 
         post_data = {
-           "ck" : self.ck,
-           "m_submit" : "好了，寄出去",
-           "m_text" : content,
-           "to" : id,
-           }
-        self.session.headers["Referer"] = "https://www.douban.com/doumail/write"
-        r = self.session.post("https://www.douban.com/doumail/write", post_data, cookies=self.session.cookies.get_dict())
+            "ck": self.ck,
+            "m_text": content,
+            "to": id,
+            "m_submit": "好了，寄出去",
+        }
+        url = "https://www.douban.com/doumail/write"
+        self.session.headers["Referer"] = url
+        r = self.session.post(url, post_data, cookies=self.session.cookies.get_dict())
         if r.status_code == 200:
-            logging.info('Okay, send_mail: To %s doumail "%s" successfully !'%(id, content))
+            logging.info('Okay, send_mail: To %s doumail "%s" successfully !' % (id, content))
             return True
 
-    def topics_up(self,
-            topics_list,
-            content=['顶',
-                    '顶帖',
-                    '自己顶',
-                    'waiting',]
-            ):
+    def topics_up(self, topics_list, content=['顶', '顶帖', '自己顶', 'waiting',]):
         '''
         Randomly select a content and reply a topic.
         '''
@@ -216,50 +216,45 @@ class DoubanRobot:
             logging.error('ck is invalid!')
             return False
 
-
         # For example --> topics_list = ['22836371','98569169']
-        #topics_list = ['22836371','98569169']
         for item in topics_list:
             post_data = {
-                    "ck" : self.ck,
-                    "rv_comment" : random.choice(content),
-                    "start" : "0",
-                    "submit_btn" : "加上去"
+                "ck": self.ck,
+                "rv_comment": random.choice(content),
+                "start": "0",
+                "submit_btn": "加上去"
             }
 
-            r = self.session.post("https://www.douban.com/group/topic/" + item + "/add_comment#last?", post_data, cookies=self.session.cookies.get_dict())
+            url = "https://www.douban.com/group/topic/" + item + "/add_comment#last?"
+            r = self.session.post(url, post_data, cookies=self.session.cookies.get_dict())
             if r.status_code == 200:
-                logging.info('Okay, already up ' + item + ' topic' )
+                logging.info('Okay, already up ' + item + ' topic')
             print r.status_code
-            print str( topics_list.index(item) + 1 ).join(['Waiting for ',' ...'])
+            print str(topics_list.index(item) + 1).join(['Waiting for ', ' ...'])
             time.sleep(60)  # Wait a minute to up next topic, You can modify it to delay longer time
         return True
 
-
-    def delete_comments(self,topic_url):
+    def delete_comments(self, topic_url):
         topic_id = re.findall(r'([0-9]+)', topic_url)[0]
         content = self.session.get(topic_url).text
         comments_list = re.findall(r'<li class="clearfix comment-item" id="[0-9]+" data-cid="([0-9]+)" >', content)
-        print comments_list
+        # print comments_list
         # Leave last comment and delete all of the past comments
         for item in comments_list[:-1]:
             post_data = {
-                    "ck"  : self.ck,
-                    "cid" : item
+                "ck": self.ck,
+                "cid": item
             }
-            r = self.session.post("https://www.douban.com/j/group/topic/" + topic_id + "/remove_comment", post_data, cookies=self.session.cookies.get_dict())
+            url = "https://www.douban.com/j/group/topic/" + topic_id + "/remove_comment"
+            r = self.session.post(url, post_data, cookies=self.session.cookies.get_dict())
             if r.status_code == 200:
-                logging.info('Okay, already delete ' + topic_id + ' topic' )  # All of them return 200... Even if it is not your comment
+                logging.info('Okay, already delete ' + topic_id + ' topic')
+                # All of them return 200... Even if it is not your comment
             print r.status_code
             time.sleep(10)  # Wait ten seconds to delete next one
         return True
 
-   def sofa(self,
-            group_id,
-            content=['沙发',
-                    '顶',
-                    '挽尊',]
-            ):
+    def sofa(self, group_id, content=['沙发', '顶', '挽尊', ]):
         '''
         Randomly select a content and reply a topic.
         '''
@@ -267,23 +262,23 @@ class DoubanRobot:
             logging.error('ck is invalid!')
             return False
 
-        group_url = "https://www.douban.com/group/" + group_id +"/#topics"
+        group_url = "https://www.douban.com/group/" + group_id + "/#topics"
         html = self.session.get(group_url, cookies=self.session.cookies.get_dict()).text
-        topics = re.findall(r'topic/(\d+?)/.*?class="">.*?<td nowrap="nowrap" class="">(.*?)</td>',
-                    html, re.DOTALL)
+        topics = re.findall(r'topic/(\d+?)/.*?class="">.*?<td nowrap="nowrap" class="">(.*?)</td>', html, re.DOTALL)
 
         for item in topics:
             if item[1] == '':
                 post_data = {
-                        "ck" : self.ck,
-                        "rv_comment" : random.choice(content),
-                        "start" : "0",
-                        "submit_btn" : "加上去"
+                    "ck": self.ck,
+                    "rv_comment": random.choice(content),
+                    "start": "0",
+                    "submit_btn": "加上去"
                 }
-                r = self.session.post("https://www.douban.com/group/topic/" + item[0] + "/add_comment#last?", post_data, cookies=self.session.cookies.get_dict())
+                url = "https://www.douban.com/group/topic/" + item[0] + "/add_comment#last?"
+                r = self.session.post(url, post_data, cookies=self.session.cookies.get_dict())
                 if r.status_code == 200:
-                    logging.info('Okay, send_mail: To %s doumail "%s" successfully!'%(id, content))
-        return True        
+                    logging.info('Okay, send_mail: To %s doumail "%s" successfully!' % (id, content))
+        return True
 
     def get_joke(self):
         '''
@@ -295,25 +290,24 @@ class DoubanRobot:
             title = x[1]
             joke_url = 'http://www.xiaohuayoumo.com' + x[0]
             page = self.session.get(joke_url).text
-            result = re.compile(r'content:encoded">(.+?)<p.+?</p>(.+?)</div></div></div></div>',
-                        re.DOTALL).findall(page)
+            result = re.compile(r'content:encoded">(.+?)<p.+?</p>(.+?)</div></div></div></div>', re.DOTALL).findall(page)
             for x in result[:1]:
                 content = x[0] + x[1]
-                content = re.sub(r'</?\w+[^>]*>',' ',content)
+                content = re.sub(r'</?\w+[^>]*>', ' ', content)
         logging.info('get a joke from http://www.xiaohuayoumo.com/')
         return title, content
-
 
 
 def save_html(name, data):
     with open(name, 'w') as f:
         f.write(data)
 
+
 if __name__ == '__main__':
-    account_id =  ''    # your account no (E-mail or phone number)
-    password   =  ''    # your account password
-    douban_id  =  ''    # your id number
-    app = DoubanRobot(account_id, password,douban_id)
+    account_id = ''    # your account no (E-mail or phone number)
+    password = ''    # your account password
+    douban_id = ''    # your id number
+    app = DoubanRobot(account_id, password, douban_id)
     # app.login()
     # titile, content = app.get_joke()
     # print titile, content
