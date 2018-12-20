@@ -2,77 +2,98 @@
 
 A simple robot for douban.com
 
-    .
-    ├── doubanrobot.py  --by requests.
-    ├── douban_urllib.py	-- by urllib/urllib2
-    └── README.md
-
-**Notice:** douban_urllib.py will never be updated.
-
 ## Usage
 
-``` python
-import doubanrobot
+[Examples](examples.py)
 
-email = 'username@email.com'
-password = 'password'
+## 功能概览
 
-app = doubanrobot.DoubanRobot(email, password)
+### 登录
 
-titile, content = app.get_joke()
-print titile, content
-if titile and content:
-    print app.new_topic("cd", titile, content)
+    import doubanrobot
 
-app.talk_status('hahahah, just for a test')
-app.send_mail(63666378, 'Hallo, linsir.')
-app.sofa("CentOS",['aaaa', 'bbbb', 'cccc'])
-```
+    email = 'xxx@qq.com'
+    password = 'password'
 
-## Topics_Up function
+    auth = doubanrobot.Auth(email, password)
 
-This function helps you to save time of manually posting a comment in order to **up** your **topic**. You can deploy this code on your `server`, such as `Linux VPS`
+### 个人相关接口
 
-This function fetch all of your topics in your `douban group` homepage. The url of this page looks like this 
+    people = doubanrobot.People(auth)
 
-```
-	https://www.douban.com/group/people/your_douban_id/publish
-```
+- 发状态
+`people.talk_status("hhhhhh")`
 
-The variable `douban_id` should be filled in. You can find it in the above url or your douban homepage. 
+- 发豆邮
+    `people.send_doumail("66902522", 'Hallo, linsir.')`
+    
+- 获取关注的人
+`print(people.get_contacts_list())`
 
-Some people use characters as their `douban_id`, however I just test the interge type `douban_id`, which is also the original format.
+- 获取关注我的人
+print(people.get_contacts_rlist())
 
+- 取消关注
+`people.remove_contact("66902522")`
 
-`topics_list` is a list of the interger part of your topics url 
+- 关注
+`people.add_contact("66902522")`
 
-```
-	https://www.douban.com/group/topic/topic_id/
-```
+- 获取黑名单
+`print(people.get_blacklist())`
 
-You can manually modify it, the example already given in the `code comment`.
+- 添加到黑名单
+`people.add_to_blacklist("76326966")`
 
-In the end, `content` list contains all of your possible `comments`.
+- 移出黑名单
+`people.remove_from_blacklist("76326966")`
 
-## Tips
+### 小组相关接口
 
-You can also combine this script with Linux `crontab` to automaticlly up your topics in specific time. For example:
+    group = doubanrobot.Group(app)
 
-```
-	0 8-24/4 * * * /usr/bin/python /root/doubanrobot.py
-```
+- 获取加入的小组
+`print(group.get_joined_groups())`
 
+- 加入不需要验证的组
+`group.join_group("TurboGears")`
 
-If you didn't follow the group before, the service may return you a **403** `response code`, because you do not have right to make comment in this group without following it.
+- 加入需要验证的组
+`group.join_group("343477", "申请加入！！！")`
 
-## Example
+- 退出小组
+`group.quit_group("TurboGears")`
 
-![up_topics_example](up_topics_example.jpg)
+- 我发起的帖子列表
+`print(group.get_my_publish_topics(reply=False))`
 
-## Todo List
+- 我回复的帖子列表及回应数
+`print(group.get_my_reply_topics(reply=False))`
 
-- [x] Example Picture
-- [x] Delete Previous Comments In One Topic
-- [ ] Usage Illustration
-- [ ] Delete All of Previous Comments In Account
-- [ ] Handle Multiple Pages Issues
+- 删除我发起的帖子（会删除所有评论）
+`group.delete_my_topic("129875286", 155)`
+
+- 获取帖子评论列表
+`group.get_other_comments_list("41603339", 155)`
+
+- 获取帖子我回应评论列表
+`group.get_reply_comments_list("81705524")`
+
+- 发表新帖子
+`group.new_topic("centos", "test", "hahah.")`
+
+- 抢沙发
+`group.sofa("CentOS",['aaaa', 'bbbb', 'cccc'])`
+
+- 顶帖子
+`group.topics_up(["129875286"],['xxx', 'yyy', 'zzz'])`
+
+- 删除所有回应的评论
+`group.delete_reply_topic_comments()`
+
+- 删除所有发布的帖子
+`group.delete_my_publish_topics`
+
+## 更多
+
+验证码破解及更多接口请自己抓包分析。
