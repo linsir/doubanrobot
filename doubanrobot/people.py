@@ -24,6 +24,25 @@ class People:
 
         return contacts_list
 
+    def edit_intro(self, content='Hello. I just edited my douban intro.'):
+        '''
+        edit your bio (aka intro)
+        '''
+        if not self.auth.ck:
+            logger.error('ck is invalid!')
+            return False
+
+        post_data = {
+            "ck": self.auth.ck,
+            "intro": content,
+        }
+
+        self.auth.session.headers["Referer"] = DOUBAN_EDIT_INTRO
+        r = self.auth.session.post(DOUBAN_EDIT_INTRO, data=post_data, cookies=self.auth.session.cookies.get_dict())
+        if r.status_code == 200:
+            logger.info('Okay, edited your intro successfully !')
+            return True
+        
     def get_contacts_rlist(self):
         if not self.auth.ck:
             logger.error('ck is invalid!')
