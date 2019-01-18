@@ -20,12 +20,18 @@ A simple robot for douban.com
 ### 个人相关接口
 
     people = doubanrobot.People(auth)
+    
+- 修改简介
+`people.edit_intro("i just changed my douban intro")`  
 
 - 发状态
 `people.talk_status("hhhhhh")`
 
-- 发豆邮
-    `people.send_doumail("66902522", 'Hallo, linsir.')`
+- 发豆邮 (对同一人首次发豆邮后该endpoint失效，以后需要使用回复豆邮）
+    `people.send_doumail("66902522", 'Hallo, linsir.')` 
+    
+- 回复豆邮
+    `people.reply_doumail("66902522", 'Hallo again, linsir.')` 
     
 - 获取关注的人
 `print(people.get_contacts_list())`

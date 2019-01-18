@@ -24,6 +24,25 @@ class People:
 
         return contacts_list
 
+    def edit_intro(self, content='Hello. I just edited my douban intro.'):
+        '''
+        edit your bio (aka intro)
+        '''
+        if not self.auth.ck:
+            logger.error('ck is invalid!')
+            return False
+
+        post_data = {
+            "ck": self.auth.ck,
+            "intro": content,
+        }
+
+        self.auth.session.headers["Referer"] = DOUBAN_EDIT_INTRO
+        r = self.auth.session.post(DOUBAN_EDIT_INTRO, data=post_data, cookies=self.auth.session.cookies.get_dict())
+        if r.status_code == 200:
+            logger.info('Okay, edited your intro successfully !')
+            return True
+        
     def get_contacts_rlist(self):
         if not self.auth.ck:
             logger.error('ck is invalid!')
@@ -157,9 +176,10 @@ class People:
             logger.info('Okay, send_mail: To %s doumail "%s" successfully !' % (id, content))
             return True
 
-    def reply_doumail(self, id, content='Linsir, this doumail from https://github.com/linsir/doubanrobot'):
+    def reply_doumail(self, receive_id, content='Linsir, this doumail from https://github.com/linsir/doubanrobot'):
         '''
         send a doumail to other.
+        the problem here is that the receive_id must be a number, not the custom url name.
         '''
         if not self.auth.ck:
             logger.error('ck is invalid!')
@@ -168,9 +188,9 @@ class People:
         post_data = {
             "ck": self.auth.ck,
             "m_text": content,
-            "to": id,
+            "to": receive_id,
         }
-        self.auth.session.headers["Referer"] = DOUBAN_DOUMAIL_REPLY
+        self.auth.session.headers["Referer"] = DOUBAN_DOUMAIL_CHAT.format(receive_id=receive_id)
         r = self.auth.session.post(DOUBAN_DOUMAIL_REPLY, post_data, cookies=self.auth.session.cookies.get_dict())
         if r.status_code == 200:
             logger.info('Okay, reply_doumail: To %s doumail "%s" successfully !' % (id, content))
