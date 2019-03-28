@@ -21,6 +21,7 @@ DOUBAN_ADD_CONTACT = "https://www.douban.com/j/contact/addcontact"
 DOUBAN_BLACKLIST = "https://www.douban.com/contacts/blacklist"
 DOUBAN_ADD_BLACKLIST = "https://www.douban.com/j/contact/addtoblacklist"
 DOUBAN_REMOVE_BLACKLIST = "https://www.douban.com/contacts/blacklist?remove={douban_id}&ck={ck}"
+DOUBAN_UPLOAD_IMAGE = "https://www.douban.com/j/upload"
 
 # group
 DOUBAN_GROUP = "https://www.douban.com/group/"
