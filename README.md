@@ -27,11 +27,14 @@ A simple robot for douban.com
 - 发状态
 `people.talk_status("hhhhhh")`
 
+- 发带图片状态
+`people.send_image("test.jpg", "hhhhhh")`
+
 - 发豆邮 (对同一人首次发豆邮后该endpoint失效，以后需要使用回复豆邮）
-    `people.send_doumail("66902522", 'Hallo, linsir.')` 
+`people.send_doumail("66902522", 'Hallo, linsir.')` 
     
 - 回复豆邮
-    `people.reply_doumail("66902522", 'Hallo again, linsir.')` 
+`people.reply_doumail("66902522", 'Hallo again, linsir.')` 
     
 - 获取关注的人
 `print(people.get_contacts_list())`
