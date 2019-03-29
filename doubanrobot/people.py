@@ -155,7 +155,34 @@ class People:
         if r.status_code == 200:
             logger.info('Okay, talk_status: "%s" post successfully !' % content)
             return True
+        
+        
+    def send_image(self, image, content='Hello. this message from https://github.com/linsir/doubanrobot'):
+        '''
+        post your status with an image.
+        '''
+        if not self.auth.ck:
+            logging.error('ck is invalid!')
+            return False
+        
+        upload_data = {"ck": self.auth.ck}
+        files = {"image":open(image, "rb")}
+        self.auth.session.headers["Referer"] = DOUBAN_UPLOAD_IMAGE
+        upload = self.session.post(DOUBAN_UPLOAD_IMAGE, cookies=self.session.cookies.get_dict(), data=upload_data, files=files).json()
 
+        post_data = {
+            "ck": self.auth.ck,
+            "comment": content,
+            "uploaded": upload["url"],
+        }
+        
+        self.auth.session.headers["Referer"] = DOUBAN_HOME
+        r = self.session.post(DOUBAN_HOME, data=post_data, cookies=self.session.cookies.get_dict())
+        if r.status_code == 200:
+            logging.info('Okay, send_image: "%s" post successfully !' % content)
+            return True
+        
+        
     def send_doumail(self, id, content='Linsir, this doumail from https://github.com/linsir/doubanrobot'):
         '''
         send a doumail to other.
